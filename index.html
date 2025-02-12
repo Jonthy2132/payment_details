@@ -1,205 +1,256 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Player Payment Check</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Status</title>
     <style>
-        body { 
-            font-family: 'Arial', sans-serif; 
-            text-align: center; 
-            background-color: #f0f2f5; 
-            margin: 0; 
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
             padding: 20px;
         }
         .container {
-            background: white;
-            width: 50%;
+            max-width: 900px;
             margin: auto;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
-        h1 {
-            color: #007bff;
-            font-size: 28px;
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        .search-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
         }
-        input, select, button { 
-            padding: 12px; 
-            margin: 10px; 
+        .search-container input,
+        .search-container select,
+        .search-container button {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
             font-size: 16px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
-        input, select {
-            width: 250px;
         }
         button {
-            background-color: #007bff; 
-            color: white; 
+            background: #007bff;
+            color: white;
             border: none;
             cursor: pointer;
-            transition: 0.3s;
             font-weight: bold;
         }
         button:hover {
-            background-color: #0056b3;
+            background: #0056b3;
         }
-        table { 
-            margin: auto; 
-            border-collapse: collapse; 
-            width: 90%; 
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 14px; 
-            text-align: center; 
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
             font-size: 16px;
         }
         th {
-            background-color: #007bff; 
+            background: #007bff;
             color: white;
-            font-size: 18px;
-        }
-        td {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #e9ecef;
-        }
-        .due {
-            color: red;
-            font-weight: bold;
         }
         .paid {
-            color: green;
+            background: #d4edda;
+            color: #155724;
             font-weight: bold;
+        }
+        .due {
+            background: #f8d7da;
+            color: #721c24;
+            font-weight: bold;
+        }
+        .penalty {
+            background: #ffc107;
+            color: #333;
+            font-weight: bold;
+        }
+        .summary {
+            font-size: 18px;
+            font-weight: bold;
+            color: green;
+            text-align: right;
+            margin-top: 10px;
         }
         .qr-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            text-align: center;
             margin-top: 20px;
+            display: none;
         }
         .qr-container img {
-            width: 120px;
-            height: 120px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            width: 150px;
+            height: 150px;
         }
-        .payment-message { 
-            margin-top: 20px; 
-            font-size: 18px; 
-            color: red; 
-            font-weight: bold; 
-        }
-        .total-payment {
-            font-size: 20px;
+        .contact-text {
+            font-size: 18px;
             font-weight: bold;
+            color: red;
             margin-top: 10px;
-            color: #28a745;
-        }
-        @media (max-width: 768px) {
-            .container {
-                width: 90%;
-            }
-            input, select {
-                width: 100%;
-            }
         }
     </style>
-    <script>
-        let players = [];
-
-        function loadCSV() {
-            fetch('players.csv')
-                .then(response => response.text())
-                .then(data => {
-                    let rows = data.trim().split("\n").map(row => row.split(","));
-                    let headers = rows.shift();
-                    players = rows.map(row => ({
-                        id: row[0],
-                        name: row[1].trim().toLowerCase(),
-                        contact: row[2],
-                        payments: {
-                            cricket: row[3] || "",
-                            volleyball: row[4] || "",
-                            hockey: row[5] || ""
-                        }
-                    }));
-                })
-                .catch(error => console.error("Error loading CSV:", error));
-        }
-
-        function checkPayment() {
-            let searchInput = document.getElementById("playerSearch").value.trim().toLowerCase();
-            let selectedGame = document.getElementById("gameType").value;
-            let player;
-
-            if (!isNaN(searchInput)) {
-                player = players.find(p => p.id == searchInput);
-            } else {
-                player = players.find(p => p.name.includes(searchInput));
-            }
-
-            if (player) {
-                let paymentStatus = player.payments[selectedGame] || "Due";
-                let duePayment = paymentStatus === "Due";
-                
-                // Calculate Total Payment
-                let totalPayment = players.reduce((sum, p) => {
-                    let amount = parseFloat(p.payments[selectedGame]) || 0;
-                    return sum + amount;
-                }, 0);
-
-                document.getElementById("result").innerHTML = `
-                    <table>
-                        <tr><th>ID</th><th>Name</th><th>Contact</th></tr>
-                        <tr>
-                            <td>${player.id}</td>
-                            <td>${player.name.charAt(0).toUpperCase() + player.name.slice(1)}</td>
-                            <td>${player.contact}</td>
-                        </tr>
-                    </table>
-                    <h3>${selectedGame.charAt(0).toUpperCase() + selectedGame.slice(1)} Payment Status</h3>
-                    <table>
-                        <tr><th>Game</th><th>Payment Amount</th></tr>
-                        <tr>
-                            <td>${selectedGame.charAt(0).toUpperCase() + selectedGame.slice(1)}</td>
-                            <td class="${duePayment ? 'due' : 'paid'}">
-                                ${paymentStatus !== "Due" ? `$${paymentStatus}` : "Due"}
-                            </td>
-                        </tr>
-                    </table>
-                    ${duePayment ? `
-                        <p class="payment-message">If you want to pay, please contact: <strong>+123-456-7890</strong></p>
-                        <div class="qr-container">
-                            <img src="QR.png" alt="Scan to Pay">
-                        </div>
-                    ` : ""}
-                `;
-            } else {
-                document.getElementById("result").innerHTML = "<p style='color: red; font-weight: bold;'>Player not found!</p>";
-            }
-        }
-
-        window.onload = loadCSV;
-    </script>
 </head>
 <body>
     <div class="container">
-        <h1>Check Player Payment Status</h1>
-        <input type="text" id="playerSearch" placeholder="Enter Player ID or Name">
-        <select id="gameType">
-            <option value="cricket">Cricket</option>
-            <option value="volleyball">Volleyball</option>
-            <option value="hockey">Hockey</option>
-        </select>
-        <button onclick="checkPayment()">Check</button>
-        <div id="result"></div>
+        <h2>Player Payment Status</h2>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Enter ID or Name">
+            
+            <select id="howPayFilter">
+                <option value="">Select Payment Type</option>
+                <option value="Month by month">Month by Month</option>
+                <option value="Half year">Half Year</option>
+                <option value="Year">Year</option>
+            </select>
+            
+            <select id="monthFilter">
+                <option value="">Select Month</option>
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+            </select>
+
+            <button onclick="searchPlayer()">Search</button>
+        </div>
+
+        <p class="summary" id="totalAmountText"></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Contact No.</th>
+                    <th>How Pay</th>
+                    <th>Month</th>
+                    <th>Due Date</th>
+                    <th>Pay Date</th>
+                    <th>Amount</th>
+                    <th>Penalty</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="resultTable">
+                <!-- Results will be displayed here -->
+            </tbody>
+        </table>
+
+        <div class="qr-container" id="qrContainer">
+            <p class="contact-text">If you want to pay, please contact us at: <strong>+1234567890</strong></p>
+            <img src="QR.png" alt="QR Code">
+        </div>
     </div>
+
+    <script>
+        let playerData = [];
+
+        async function fetchGoogleSheetData() {
+            const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQk-NnkqUCm5JEiQSXBqJs54MC5_Wu5JK-G9u3uT6B80gezZ1HrCKdDbpregRm1O1e6RK--BmJe2qGJ/pub?output=csv";
+            
+            try {
+                const response = await fetch(sheetURL);
+                const csvText = await response.text();
+                const rows = csvText.split("\n").map(row => row.split(","));
+                
+                playerData = rows.slice(1).map(row => ({
+                    id: row[0]?.trim() || "",
+                    name: row[1]?.trim() || "",
+                    contact: row[2]?.trim() || "",
+                    howPay: row[3]?.trim() || "",
+                    month: row[4]?.trim() || "",
+                    dueDate: row[5]?.trim() || "",
+                    payDate: row[6]?.trim() || "",
+                    amount: parseFloat(row[7]?.trim() || "0")
+                }));
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        function searchPlayer() {
+            let searchValue = document.getElementById("searchInput").value.toLowerCase();
+            let selectedMonth = document.getElementById("monthFilter").value;
+            let selectedHowPay = document.getElementById("howPayFilter").value;
+            let tableBody = document.getElementById("resultTable");
+            let totalAmountText = document.getElementById("totalAmountText");
+            let qrContainer = document.getElementById("qrContainer");
+            tableBody.innerHTML = "";
+            totalAmountText.textContent = "";
+            qrContainer.style.display = "none";
+
+            let hasPendingPayment = false;
+            let totalAmount = 0;
+
+            let filteredData = playerData.filter(player => {
+                return (
+                    (player.id.toLowerCase().includes(searchValue) || player.name.toLowerCase().includes(searchValue)) &&
+                    (selectedHowPay === "" || player.howPay === selectedHowPay) &&
+                    (selectedHowPay === "Month by month" ? (selectedMonth === "" || player.month === selectedMonth) : true)
+                );
+            });
+
+            filteredData.forEach(player => {
+                let statusClass = "paid";
+                let dueDate = new Date(player.dueDate.split("-").reverse().join("-"));
+                let today = new Date();
+                let penalty = 0;
+
+                if (!player.payDate) {
+                    let daysOverdue = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
+                    if (daysOverdue > 0) penalty += 20;
+                    if (daysOverdue > 7) penalty += 20;
+                    statusClass = "due";
+                    hasPendingPayment = true;
+                }
+
+                totalAmount += (player.amount + penalty);
+
+                let row = `<tr class="${statusClass}">
+                    <td>${player.id}</td>
+                    <td>${player.name}</td>
+                    <td>${player.contact}</td>
+                    <td>${player.howPay}</td>
+                    <td>${player.month}</td>
+                    <td>${player.dueDate}</td>
+                    <td>${player.payDate || "Not Paid"}</td>
+                    <td>${player.amount}</td>
+                    <td>${penalty}</td>
+                    <td>${player.amount + penalty}</td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+
+            if (hasPendingPayment) qrContainer.style.display = "block";
+            totalAmountText.textContent = `Total Amount: ₹${totalAmount}`;
+        }
+
+        fetchGoogleSheetData();
+    </script>
 </body>
 </html>
