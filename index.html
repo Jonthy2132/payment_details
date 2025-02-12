@@ -3,43 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Status</title>
+    <title>Player Payment Status</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+            background: #f0f2f5;
             margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
         }
         .container {
-            max-width: 900px;
-            margin: auto;
+            width: 100%;
+            max-width: 1100px;
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
         }
         h2 {
             text-align: center;
             color: #333;
+            margin-bottom: 20px;
         }
         .search-container {
             display: flex;
-            flex-wrap: wrap;
             gap: 10px;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
             margin-bottom: 20px;
         }
         .search-container input,
         .search-container select,
         .search-container button {
             flex: 1;
-            min-width: 150px;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 6px;
             font-size: 16px;
+            outline: none;
         }
         button {
             background: #007bff;
@@ -47,61 +50,59 @@
             border: none;
             cursor: pointer;
             font-weight: bold;
+            transition: 0.3s;
         }
         button:hover {
             background: #0056b3;
         }
+        .table-container {
+            overflow-x: auto;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-            font-size: 16px;
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
         }
         th {
             background: #007bff;
             color: white;
         }
-        .paid {
-            background: #d4edda;
-            color: #155724;
+        tr:hover {
+            background: #f1f1f1;
+        }
+        .badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
             font-weight: bold;
         }
-        .due {
-            background: #f8d7da;
-            color: #721c24;
-            font-weight: bold;
-        }
-        .penalty {
-            background: #ffc107;
-            color: #333;
-            font-weight: bold;
-        }
-        .summary {
-            font-size: 18px;
-            font-weight: bold;
-            color: green;
-            text-align: right;
-            margin-top: 10px;
-        }
+        .paid { background: #28a745; color: white; }
+        .due { background: #dc3545; color: white; }
+        .penalty { background: #ff9800; color: white; }
         .qr-container {
             text-align: center;
             margin-top: 20px;
             display: none;
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
         }
         .qr-container img {
-            width: 150px;
-            height: 150px;
+            width: 120px;
+            height: 120px;
         }
         .contact-text {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
-            color: red;
-            margin-top: 10px;
+            color: #856404;
         }
     </style>
 </head>
@@ -110,16 +111,14 @@
         <h2>Player Payment Status</h2>
 
         <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Enter ID or Name">
-            
-            <select id="howPayFilter">
-                <option value="">Select Payment Type</option>
+            <input type="text" id="searchInput" placeholder="Enter ID or Name" onkeyup="searchPlayer()">
+            <select id="howPayFilter" onchange="searchPlayer()">
+                <option value="">Payment Type</option>
                 <option value="Month by month">Month by Month</option>
                 <option value="Half year">Half Year</option>
                 <option value="Year">Year</option>
             </select>
-            
-            <select id="monthFilter">
+            <select id="monthFilter" onchange="searchPlayer()">
                 <option value="">Select Month</option>
                 <option value="January">January</option>
                 <option value="February">February</option>
@@ -134,31 +133,25 @@
                 <option value="November">November</option>
                 <option value="December">December</option>
             </select>
-
-            <button onclick="searchPlayer()">Search</button>
         </div>
 
-        <p class="summary" id="totalAmountText"></p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Contact No.</th>
-                    <th>How Pay</th>
-                    <th>Month</th>
-                    <th>Due Date</th>
-                    <th>Pay Date</th>
-                    <th>Amount</th>
-                    <th>Penalty</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody id="resultTable">
-                <!-- Results will be displayed here -->
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Contact</th>
+                        <th>How Pay</th>
+                        <th>Month</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Penalty</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
         <div class="qr-container" id="qrContainer">
             <p class="contact-text">If you want to pay, please contact us at: <strong>+1234567890</strong></p>
@@ -197,57 +190,37 @@
             let searchValue = document.getElementById("searchInput").value.toLowerCase();
             let selectedMonth = document.getElementById("monthFilter").value;
             let selectedHowPay = document.getElementById("howPayFilter").value;
-            let tableBody = document.getElementById("resultTable");
-            let totalAmountText = document.getElementById("totalAmountText");
+            let tableBody = document.querySelector("#resultTable tbody");
             let qrContainer = document.getElementById("qrContainer");
             tableBody.innerHTML = "";
-            totalAmountText.textContent = "";
             qrContainer.style.display = "none";
 
             let hasPendingPayment = false;
-            let totalAmount = 0;
 
-            let filteredData = playerData.filter(player => {
-                return (
-                    (player.id.toLowerCase().includes(searchValue) || player.name.toLowerCase().includes(searchValue)) &&
-                    (selectedHowPay === "" || player.howPay === selectedHowPay) &&
-                    (selectedHowPay === "Month by month" ? (selectedMonth === "" || player.month === selectedMonth) : true)
-                );
-            });
+            let filteredData = playerData.filter(player => 
+                (player.id.includes(searchValue) || player.name.toLowerCase().includes(searchValue)) &&
+                (!selectedHowPay || player.howPay === selectedHowPay) &&
+                (!selectedMonth || player.month === selectedMonth)
+            );
 
             filteredData.forEach(player => {
-                let statusClass = "paid";
-                let dueDate = new Date(player.dueDate.split("-").reverse().join("-"));
-                let today = new Date();
-                let penalty = 0;
+                let penalty = !player.payDate ? 20 : 0;
+                let status = player.payDate ? `<span class="badge paid">Paid</span>` : `<span class="badge due">Pending</span>`;
+                if (!player.payDate) hasPendingPayment = true;
 
-                if (!player.payDate) {
-                    let daysOverdue = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
-                    if (daysOverdue > 0) penalty += 20;
-                    if (daysOverdue > 7) penalty += 20;
-                    statusClass = "due";
-                    hasPendingPayment = true;
-                }
-
-                totalAmount += (player.amount + penalty);
-
-                let row = `<tr class="${statusClass}">
+                tableBody.innerHTML += `<tr>
                     <td>${player.id}</td>
                     <td>${player.name}</td>
                     <td>${player.contact}</td>
                     <td>${player.howPay}</td>
                     <td>${player.month}</td>
-                    <td>${player.dueDate}</td>
-                    <td>${player.payDate || "Not Paid"}</td>
-                    <td>${player.amount}</td>
-                    <td>${penalty}</td>
-                    <td>${player.amount + penalty}</td>
+                    <td>₹${player.amount}</td>
+                    <td>${status}</td>
+                    <td class="badge penalty">${penalty > 0 ? `₹${penalty}` : "-"}</td>
                 </tr>`;
-                tableBody.innerHTML += row;
             });
 
             if (hasPendingPayment) qrContainer.style.display = "block";
-            totalAmountText.textContent = `Total Amount: ₹${totalAmount}`;
         }
 
         fetchGoogleSheetData();
