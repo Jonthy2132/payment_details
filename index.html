@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: #f4f4f9;
+            background: #f0f2f5;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -29,9 +29,10 @@
         .search-container {
             display: flex;
             gap: 10px;
+            align-items: center;
+            justify-content: space-between;
             flex-wrap: wrap;
             margin-bottom: 20px;
-            justify-content: center;
         }
         .search-container input,
         .search-container select,
@@ -42,7 +43,6 @@
             border-radius: 6px;
             font-size: 16px;
             outline: none;
-            transition: 0.3s;
         }
         button {
             background: #007bff;
@@ -51,7 +51,6 @@
             cursor: pointer;
             font-weight: bold;
             transition: 0.3s;
-            padding: 12px;
         }
         button:hover {
             background: #0056b3;
@@ -62,20 +61,20 @@
             gap: 15px;
             justify-content: center;
         }
-        .player-card {
+        .card {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 15px;
             width: 280px;
             text-align: center;
+            border-left: 5px solid #007bff;
         }
-        .player-card h3 {
-            margin: 0;
-            font-size: 20px;
+        .card h3 {
+            margin: 10px 0;
             color: #333;
         }
-        .player-card p {
+        .card p {
             margin: 5px 0;
             font-size: 14px;
             color: #555;
@@ -86,7 +85,6 @@
             font-size: 14px;
             font-weight: bold;
             display: inline-block;
-            margin-top: 8px;
         }
         .paid { background: #28a745; color: white; }
         .due { background: #dc3545; color: white; }
@@ -139,10 +137,10 @@
             </select>
         </div>
 
-        <div class="card-container" id="resultContainer"></div>
+        <div class="card-container" id="cardContainer"></div>
 
         <div class="qr-container" id="qrContainer">
-            <p class="contact-text">If you want to pay, please contact us at: <strong>+1234567890</strong></p>
+            <p class="contact-text">If you want to pay, please contact us at: <a href="tel:+919510040360">+91 95100 40380</a></p>
             <img src="QR.png" alt="QR Code">
         </div>
     </div>
@@ -166,7 +164,7 @@
                     month: row[4]?.trim() || "",
                     dueDate: row[5]?.trim() || "",
                     payDate: row[6]?.trim() || "",
-                    amount: parseFloat(row[7]?.trim() || "0")
+                    amount: parseFloat(row[7]?.replace(/[^0-9.]/g, "").trim() || "0")
                 }));
 
             } catch (error) {
@@ -178,9 +176,9 @@
             let searchValue = document.getElementById("searchInput").value.toLowerCase();
             let selectedMonth = document.getElementById("monthFilter").value;
             let selectedHowPay = document.getElementById("howPayFilter").value;
-            let resultContainer = document.getElementById("resultContainer");
+            let cardContainer = document.getElementById("cardContainer");
             let qrContainer = document.getElementById("qrContainer");
-            resultContainer.innerHTML = "";
+            cardContainer.innerHTML = "";
             qrContainer.style.display = "none";
 
             let hasPendingPayment = false;
@@ -192,16 +190,19 @@
             );
 
             filteredData.forEach(player => {
+                let penalty = !player.payDate ? 20 : 0;
                 let status = player.payDate ? `<span class="badge paid">Paid</span>` : `<span class="badge due">Pending</span>`;
                 if (!player.payDate) hasPendingPayment = true;
 
-                resultContainer.innerHTML += `<div class="player-card">
+                let displayAmount = player.amount === 1 ? 1000 : player.amount;
+
+                cardContainer.innerHTML += `<div class="card">
                     <h3>${player.name}</h3>
-                    <p>ID: ${player.id}</p>
-                    <p>Month: ${player.month}</p>
-                    <p>How Pay: ${player.howPay}</p>
-                    <p>Amount: ₹${player.amount}</p>
-                    ${status}
+                    <p><strong>Month:</strong> ${player.month}</p>
+                    <p><strong>Payment Type:</strong> ${player.howPay}</p>
+                    <p><strong>Amount:</strong> ₹${displayAmount}</p>
+                    <p>${status}</p>
+                    <p class="badge penalty">${penalty > 0 ? `₹${penalty}` : "-"}</p>
                 </div>`;
             });
 
