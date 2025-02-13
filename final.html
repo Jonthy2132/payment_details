@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Payment Status</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .search-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .search-container input,
+        .search-container select,
+        .search-container button {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            width: 280px;
+            text-align: center;
+            border-left: 5px solid #007bff;
+        }
+        .card h3 {
+            margin: 10px 0;
+            color: #333;
+        }
+        .card p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+        .badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .paid { background: #28a745; color: white; }
+        .due { background: #dc3545; color: white; }
+        .penalty { background: #ff9800; color: white; }
+        .qr-container {
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .qr-container img {
+            width: 120px;
+            height: 120px;
+        }
+        .contact-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Player Payment Status</h2>
+
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Enter ID or Name" onkeyup="searchPlayer()">
+            <select id="howPayFilter" onchange="searchPlayer()">
+                <option value="">Payment Type</option>
+                <option value="Month by month">Month by Month</option>
+                <option value="Half year">Half Year</option>
+                <option value="Year">Year</option>
+            </select>
+            <select id="monthFilter" onchange="searchPlayer()">
+                <option value="">Select Month</option>
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+            </select>
+        </div>
+
+        <div class="card-container" id="cardContainer"></div>
+
+        <div class="qr-container" id="qrContainer">
+            <p class="contact-text">If you want to pay, please contact us at: <a href="tel:+919510040360">+91 95100 40380</a></p>
+            <img src="MyQR.png" alt="QR Code">
+        </div>
+    </div>
+
+    <script>
+        let playerData = [];
+
+        async function fetchGoogleSheetData() {
+            const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQk-NnkqUCm5JEiQSXBqJs54MC5_Wu5JK-G9u3uT6B80gezZ1HrCKdDbpregRm1O1e6RK--BmJe2qGJ/pub?output=csv";
+            
+            try {
+                const response = await fetch(sheetURL);
+                const csvText = await response.text();
+                const rows = csvText.split("\n").map(row => row.split(","));
+                
+                playerData = rows.slice(1).map(row => ({
+                    id: row[0]?.trim() || "",
+                    name: row[1]?.trim() || "",
+                    contact: row[2]?.trim() || "",
+                    howPay: row[3]?.trim() || "",
+                    month: row[4]?.trim() || "",
+                    dueDate: row[5]?.trim() || "",
+                    payDate: row[6]?.trim() || "",
+                    amount: parseFloat(row[7]?.replace(/[^0-9.]/g, "").trim() || "0")
+                }));
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        function searchPlayer() {
+            let searchValue = document.getElementById("searchInput").value.toLowerCase();
+            let selectedMonth = document.getElementById("monthFilter").value;
+            let selectedHowPay = document.getElementById("howPayFilter").value;
+            let cardContainer = document.getElementById("cardContainer");
+            let qrContainer = document.getElementById("qrContainer");
+            cardContainer.innerHTML = "";
+            qrContainer.style.display = "none";
+
+            let hasPendingPayment = false;
+
+            let filteredData = playerData.filter(player => 
+                (player.id.includes(searchValue) || player.name.toLowerCase().includes(searchValue)) &&
+                (!selectedHowPay || player.howPay === selectedHowPay) &&
+                (!selectedMonth || player.month === selectedMonth)
+            );
+
+            filteredData.forEach(player => {
+                let penalty = !player.payDate ? 20 : 0;
+                let status = player.payDate ? `<span class="badge paid">Paid</span>` : `<span class="badge due">Pending</span>`;
+                if (!player.payDate) hasPendingPayment = true;
+
+                let displayAmount = player.amount === 1 ? 1000 : player.amount;
+
+                cardContainer.innerHTML += `<div class="card">
+                    <h3>${player.name}</h3>
+                    <p><strong>Month:</strong> ${player.month}</p>
+                    <p><strong>Payment Type:</strong> ${player.howPay}</p>
+                    <p><strong>Amount:</strong> ₹${displayAmount}</p>
+                    <p>${status}</p>
+                    <p class="badge penalty">${penalty > 0 ? `₹${penalty}` : "-"}</p>
+                </div>`;
+            });
+
+            if (hasPendingPayment) qrContainer.style.display = "block";
+        }
+
+        fetchGoogleSheetData();
+    </script>
+</body>
+</html>

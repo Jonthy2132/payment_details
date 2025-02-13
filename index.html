@@ -3,213 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Player Payment Status</title>
+    <title>Payment System</title>
     <style>
+        /* General Styling */
         body {
-            font-family: 'Poppins', sans-serif;
-            background: #f0f2f5;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 1100px;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
+            padding: 0;
             text-align: center;
-            color: #333;
-            margin-bottom: 20px;
         }
-        .search-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
+        
+        /* Login Page */
+        #loginPage {
+            display: block;
+            margin-top: 100px;
         }
-        .search-container input,
-        .search-container select,
-        .search-container button {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-            outline: none;
+        input {
+            padding: 10px;
+            margin: 5px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
         button {
-            background: #007bff;
+            padding: 10px 15px;
+            background-color: #007BFF;
             color: white;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
         }
         button:hover {
-            background: #0056b3;
+            background-color: #0056b3;
         }
-        .card-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-        }
-        .card {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-            padding: 15px;
-            width: 280px;
-            text-align: center;
-            border-left: 5px solid #007bff;
-        }
-        .card h3 {
-            margin: 10px 0;
-            color: #333;
-        }
-        .card p {
-            margin: 5px 0;
-            font-size: 14px;
-            color: #555;
-        }
-        .badge {
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            display: inline-block;
-        }
-        .paid { background: #28a745; color: white; }
-        .due { background: #dc3545; color: white; }
-        .penalty { background: #ff9800; color: white; }
-        .qr-container {
-            text-align: center;
-            margin-top: 20px;
+
+        /* Main Page */
+        #mainPage {
             display: none;
-            background: #fff3cd;
+        }
+        .navbar {
+            background: #007BFF;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar img {
+            height: 40px;
+        }
+        .navbar button {
+            background: white;
+            color: #007BFF;
+            padding: 8px 12px;
+            margin: 5px;
+            border-radius: 5px;
+        }
+
+        /* Profile Card */
+        #profileCard {
+            display: none;
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            background: white;
             padding: 15px;
+            width: 250px;
             border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
         }
-        .qr-container img {
-            width: 120px;
-            height: 120px;
+        #profileCard h3 {
+            margin: 0;
+            color: #007BFF;
         }
-        .contact-text {
-            font-size: 16px;
-            font-weight: bold;
-            color: #856404;
-        }
+
+         /* Home Section */
+/* Home Section */
+.home-section {
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center; /* Aligns vertically */
+    gap: 50px; /* Adjusted spacing between icons */
+    margin-top: 50px; /* More space from the top */
+    flex-wrap: wrap; /* Ensures responsiveness */
+}
+
+.image-button {
+    width: 160px; /* Increased size */
+    height: 160px; /* Increased size */
+    border-radius: 20%; /* 20% curved edges */
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2); /* Optional shadow for better visibility */
+}
+
+.image-button:hover {
+    transform: scale(1.1); /* Slight zoom effect */
+}
+
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Player Payment Status</h2>
 
-        <div class="search-container">
-            <input type="text" id="searchInput" placeholder="Enter ID or Name" onkeyup="searchPlayer()">
-            <select id="howPayFilter" onchange="searchPlayer()">
-                <option value="">Payment Type</option>
-                <option value="Month by month">Month by Month</option>
-                <option value="Half year">Half Year</option>
-                <option value="Year">Year</option>
-            </select>
-            <select id="monthFilter" onchange="searchPlayer()">
-                <option value="">Select Month</option>
-                <option value="January">January</option>
-                <option value="February">February</option>
-                <option value="March">March</option>
-                <option value="April">April</option>
-                <option value="May">May</option>
-                <option value="June">June</option>
-                <option value="July">July</option>
-                <option value="August">August</option>
-                <option value="September">September</option>
-                <option value="October">October</option>
-                <option value="November">November</option>
-                <option value="December">December</option>
-            </select>
+    <!-- Login Page -->
+    <div id="loginPage">
+        <h2>Login</h2>
+        <input type="text" id="userId" placeholder="Enter ID"><br>
+        <input type="password" id="userPassword" placeholder="Enter Password"><br>
+        <button onclick="login()">Login</button>
+    </div>
+
+    <!-- Main Page -->
+    <div id="mainPage">
+        <div class="navbar">
+            <img src="logo.png" alt="Logo">
+            <div>
+                <button onclick="window.location.href='#'">Home</button>
+                <button onclick="window.location.href='#'">About</button>
+                <button onclick="window.location.href='#'">Contact</button>
+            </div>
+            <button onclick="showProfile()">Profile</button>
         </div>
 
-        <div class="card-container" id="cardContainer"></div>
+        <h2>Welcome to the Payment Check System</h2>
 
-        <div class="qr-container" id="qrContainer">
-            <p class="contact-text">If you want to pay, please contact us at: <a href="tel:+919510040360">+91 95100 40380</a></p>
-            <img src="MyQR.png" alt="QR Code">
+        <!-- Home Page: Page 1, Page 2, Page 3 -->
+        <div class="home-section">
+            <a href="./final.html">
+                <img src="water.png" alt="Page 1" class="image-button">
+            </a>
+            <a href="#">
+                <img src="application.png" alt="Page 2" class="image-button">
+            </a>
+            <a href="#">
+                <img src="elementary.png" alt="Page 3" class="image-button">
+            </a>
+        </div>
+
+        <!-- Profile Card -->
+        <div id="profileCard">
+            <h3 id="profileName"></h3>
+            <p><strong>ID:</strong> <span id="profileId"></span></p>
+            <p><strong>Contact no.:</strong> <span id="profileContact"></span></p>
+            <p><strong>Address:</strong> <span id="profileAddress"></span></p>
+            <p><strong>Member:</strong> <span id="profileMember"></span></p>
+            <p><strong>Home No.:</strong> <span id="profileHomeno"></span></p>
         </div>
     </div>
 
     <script>
-        let playerData = [];
+        const loginSheetCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTSgG2cd70Tk4FXmKq9E64QizVr20XGzDjDDEF88791LEowmtqK4HmoKqiLkt-y86WjemqLsbrp3fa4/pub?gid=0&single=true&output=csv";
+        const profileSheetCSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRH6093rvoCeF7WxNUe2LSLo1B0vD8eGyg7jEhLrhAokO6F4XDsg2uNKNlpp5CBVRynkiqXsbF7HPxy/pub?gid=0&single=true&output=csv";
 
-        async function fetchGoogleSheetData() {
-            const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQk-NnkqUCm5JEiQSXBqJs54MC5_Wu5JK-G9u3uT6B80gezZ1HrCKdDbpregRm1O1e6RK--BmJe2qGJ/pub?output=csv";
-            
+        let currentUserId = null;
+
+        // Fetch CSV Data
+        async function fetchCSVData(url) {
             try {
-                const response = await fetch(sheetURL);
-                const csvText = await response.text();
-                const rows = csvText.split("\n").map(row => row.split(","));
-                
-                playerData = rows.slice(1).map(row => ({
-                    id: row[0]?.trim() || "",
-                    name: row[1]?.trim() || "",
-                    contact: row[2]?.trim() || "",
-                    howPay: row[3]?.trim() || "",
-                    month: row[4]?.trim() || "",
-                    dueDate: row[5]?.trim() || "",
-                    payDate: row[6]?.trim() || "",
-                    amount: parseFloat(row[7]?.replace(/[^0-9.]/g, "").trim() || "0")
-                }));
-
+                let response = await fetch(url);
+                let data = await response.text();
+                let rows = data.trim().split("\n").map(row => row.split(","));
+                return rows;
             } catch (error) {
-                console.error("Error fetching data:", error);
+                console.error("Error fetching CSV:", error);
+                return null;
             }
         }
 
-        function searchPlayer() {
-            let searchValue = document.getElementById("searchInput").value.toLowerCase();
-            let selectedMonth = document.getElementById("monthFilter").value;
-            let selectedHowPay = document.getElementById("howPayFilter").value;
-            let cardContainer = document.getElementById("cardContainer");
-            let qrContainer = document.getElementById("qrContainer");
-            cardContainer.innerHTML = "";
-            qrContainer.style.display = "none";
+        // Login Function
+        async function login() {
+    let userId = document.getElementById('userId').value.trim();
+    let userPassword = document.getElementById('userPassword').value.trim();
 
-            let hasPendingPayment = false;
+    let csvData = await fetchCSVData(loginSheetCSV);
+    console.log("Fetched CSV Data:", csvData);  // Print fetched data to check format
 
-            let filteredData = playerData.filter(player => 
-                (player.id.includes(searchValue) || player.name.toLowerCase().includes(searchValue)) &&
-                (!selectedHowPay || player.howPay === selectedHowPay) &&
-                (!selectedMonth || player.month === selectedMonth)
-            );
+    if (!csvData) {
+        alert("Failed to fetch login data.");
+        return;
+    }
 
-            filteredData.forEach(player => {
-                let penalty = !player.payDate ? 20 : 0;
-                let status = player.payDate ? `<span class="badge paid">Paid</span>` : `<span class="badge due">Pending</span>`;
-                if (!player.payDate) hasPendingPayment = true;
+    let isAuthenticated = csvData.some(row => row[0].trim() === userId && row[1].trim() === userPassword);
+    
+    if (isAuthenticated) {
+        currentUserId = userId;
+        console.log("User logged in:", currentUserId); 
 
-                let displayAmount = player.amount === 1 ? 1000 : player.amount;
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('mainPage').style.display = 'block';
+    } else {
+        alert("Invalid ID or Password");
+    }
+}
 
-                cardContainer.innerHTML += `<div class="card">
-                    <h3>${player.name}</h3>
-                    <p><strong>Month:</strong> ${player.month}</p>
-                    <p><strong>Payment Type:</strong> ${player.howPay}</p>
-                    <p><strong>Amount:</strong> ₹${displayAmount}</p>
-                    <p>${status}</p>
-                    <p class="badge penalty">${penalty > 0 ? `₹${penalty}` : "-"}</p>
-                </div>`;
-            });
 
-            if (hasPendingPayment) qrContainer.style.display = "block";
+        // Show Profile
+        function showProfile() {
+    let profileCard = document.getElementById("profileCard");
+
+    // Toggle profile card visibility
+    if (profileCard.style.display === "block") {
+        profileCard.style.display = "none";
+        return;
+    }
+
+    if (!currentUserId) {
+        alert("You must log in first!");
+        return;
+    }
+
+    fetchCSVData(profileSheetCSV).then((csvData) => {
+        if (!csvData) {
+            alert("Failed to load profile data.");
+            return;
         }
 
-        fetchGoogleSheetData();
+        let userDetails = csvData.find(row => row[0] === currentUserId);
+
+        if (userDetails) {
+            document.getElementById("profileName").innerText = userDetails[1];
+            document.getElementById("profileId").innerText = userDetails[0];
+            document.getElementById("profileContact").innerText = userDetails[2];
+            document.getElementById("profileAddress").innerText = userDetails[3];
+            document.getElementById("profileMember").innerText = userDetails[4];
+            document.getElementById("profileHomeno").innerText = userDetails[5];
+            profileCard.style.display = "block"; // Show the profile card
+        } else {
+            alert("Profile data not found.");
+        }
+    });
+}
+
     </script>
+
 </body>
 </html>
