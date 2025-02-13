@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Water Payment Status</title>
+    <title>Player Payment Status</title>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -110,11 +110,16 @@
 </head>
 <body>
     <div class="container">
-        <h2>Water Payment Status</h2>
+        <h2>Player Payment Status</h2>
 
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Enter ID or Name" onkeyup="searchPlayer()">
-            
+            <select id="howPayFilter" onchange="searchPlayer()">
+                <option value="">Payment Type</option>
+                <option value="Month by month">Month by Month</option>
+                <option value="Half year">Half Year</option>
+                <option value="Year">Year</option>
+            </select>
             <select id="monthFilter" onchange="searchPlayer()">
                 <option value="">Select Month</option>
                 <option value="January">January</option>
@@ -168,42 +173,44 @@
         }
 
         function searchPlayer() {
-            let searchValue = document.getElementById("searchInput").value.toLowerCase();
-            let selectedMonth = document.getElementById("monthFilter").value;
-            let selectedHowPay = document.getElementById("howPayFilter").value;
-            let cardContainer = document.getElementById("cardContainer");
-            let qrContainer = document.getElementById("qrContainer");
-            cardContainer.innerHTML = "";
-            qrContainer.style.display = "none";
+    let searchValue = document.getElementById("searchInput").value.toLowerCase();
+    let selectedMonth = document.getElementById("monthFilter").value;
+    let selectedHowPay = document.getElementById("howPayFilter").value;
+    let cardContainer = document.getElementById("cardContainer");
+    let qrContainer = document.getElementById("qrContainer");
+    cardContainer.innerHTML = "";
+    qrContainer.style.display = "none";
 
-            let hasPendingPayment = false;
+    let hasPendingPayment = false;
 
-            let filteredData = playerData.filter(player => 
-                (player.id.includes(searchValue) || player.name.toLowerCase().includes(searchValue)) &&
-                (!selectedHowPay || player.howPay === selectedHowPay) &&
-                (!selectedMonth || player.month === selectedMonth)
-            );
+    let filteredData = playerData.filter(player => 
+        (player.id.includes(searchValue) || player.name.toLowerCase().includes(searchValue)) &&
+        (!selectedHowPay || player.howPay === selectedHowPay) &&
+        (!selectedMonth || player.month === selectedMonth)
+    );
 
-            filteredData.forEach(player => {
-                let penalty = !player.payDate ? 20 : 0;
-                let status = player.payDate ? `<span class="badge paid">Paid</span>` : `<span class="badge due">Pending</span>`;
-                if (!player.payDate) hasPendingPayment = true;
+    filteredData.forEach(player => {
+        let penalty = !player.payDate ? 20 : 0;
+        let status = player.payDate ? `<span class="badge paid">Paid</span>` : `<span class="badge due">Pending</span>`;
+        if (!player.payDate) hasPendingPayment = true;
 
-                let displayAmount = player.amount === 1 ? 1000 : player.amount;
+        let displayAmount = player.amount === 1 ? 1000 : player.amount;
+        let totalAmount = displayAmount + penalty;
 
-                cardContainer.innerHTML += `<div class="card">
-                    <h3>${player.name}</h3>
-                    <p><strong>Month:</strong> ${player.month}</p>
-                    <p><strong>Payment Type:</strong> ${player.howPay}</p>
-                    <p><strong>Amount:</strong> ₹${displayAmount}</p>
-                    <p>${status}</p>
-                    <p class="badge penalty">${penalty > 0 ? `₹${penalty}` : "-"}</p>
-                </div>`;
-            });
+        cardContainer.innerHTML += `<div class="card">
+            <h3>${player.name}</h3>
+            <p><strong>Month:</strong> ${player.month}</p>
+            <p><strong>Payment Type:</strong> ${player.howPay}</p>
+            <p><strong>Amount:</strong> ₹${displayAmount}</p>
+            
+            ${penalty > 0 ? `<p class="badge penalty">Penalty: ₹${penalty}</p>` : ""}
+            <p><strong>Total:</strong> ₹${totalAmount}</p>
+            <p>${status}</p>
+        </div>`;
+    });
 
-            if (hasPendingPayment) qrContainer.style.display = "block";
-        }
-
+    if (hasPendingPayment) qrContainer.style.display = "block";
+}
         fetchGoogleSheetData();
     </script>
 </body>
