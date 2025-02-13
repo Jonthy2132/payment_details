@@ -201,7 +201,9 @@
             <h3>${player.name}</h3>
             <p><strong>Month:</strong> ${player.month}</p>
             <p><strong>Payment Type:</strong> ${player.howPay}</p>
+            <p><strong>Pay date:</strong> ${player.payDate}</p>
             <p><strong>Amount:</strong> ₹${displayAmount}</p>
+
             
             ${penalty > 0 ? `<p class="badge penalty">Penalty: ₹${penalty}</p>` : ""}
             <p><strong>Total:</strong> ₹${totalAmount}</p>
